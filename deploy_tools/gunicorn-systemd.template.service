@@ -3,7 +3,7 @@ Description=Gunicorn server for DOMAIN
 
 [Service]
 Restart=on-failure
-User=elspeth
+User=django_dev
 WorkingDirectory=/home/django_dev/sites/DOMAIN
 EnvironmentFile=/home/django_dev/sites/DOMAIN/.env
 
