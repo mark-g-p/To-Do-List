@@ -25,7 +25,7 @@ SECRET_KEY = '4uknwc&ldyvl6dqgr95pq(#%!x*$wq8dvtkwm%779=dy5wb%54'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','django-goat.goat']
+ALLOWED_HOSTS = ['django-goat.goat']
 
 
 # Application definition
