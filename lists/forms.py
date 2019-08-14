@@ -1,9 +1,10 @@
 from django import forms
 from lists.models import Item
 
+EMPTY_ITEM_ERROR = "You can't have an empty list item"
+
 class ItemForm(forms.ModelForm):
     class Meta:
-        EMPTY_ITEM_ERROR = "You can't have an empty list item"
         model = Item
         fields = ['text']
         widgets = {
