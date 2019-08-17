@@ -10,3 +10,11 @@ class Item(models.Model):
     text = models.TextField(default='')
     list = models.ForeignKey(List, default=None, on_delete=models.CASCADE)
 
+    class Meta:
+        ordering = ['id']
+        constraints = [
+            models.UniqueConstraint(fields = ['list', 'text'], name='unique_item_list'),
+        ]
+
+    def __str__(self):
+        return self.text
