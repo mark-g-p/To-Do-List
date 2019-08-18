@@ -13,7 +13,7 @@ class Item(models.Model):
     class Meta:
         ordering = ['id']
         constraints = [
-            models.UniqueConstraint(fields = ['list', 'text'], name='unique_item_list'),
+            models.UniqueConstraint(fields=['list', 'text'], name='unique_item_list'),
         ]
 
     def __str__(self):
