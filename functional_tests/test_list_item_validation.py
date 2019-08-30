@@ -78,7 +78,7 @@ class ItemValidationTest(FunctionalTest):
         ))
 
         # She starts typing in the input box to clear the error
-        self.get_item_input_box().send_keys('12')
+        self.get_item_input_box().send_keys('b')
 
         # She is pleased to see that the error message disappears
         self.wait_for(lambda: self.assertFalse(
