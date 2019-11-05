@@ -22,10 +22,44 @@ class MyListTest(FunctionalTest):
         ))
 
     def test_logged_in_users_lists_are_saved_as_my_lists(self):
-        email = "test@example.com"
-        self.browser.get(self.live_server_url)
-        self.wait_to_be_logged_out(email)
+        # User is logged-in
+        self.create_preauthenticated_session('test@example.com')
 
-        self.create_preauthenticated_session(email)
+        # goes to the home page and creates a lists
         self.browser.get(self.live_server_url)
-        self.wait_to_be_logged_in(email)
+        self.add_list_item('Test 1st')
+        self.add_list_item('Test 2nd')
+        first_list_url = self.browser.current_url
+
+        # then notices "My Lists" link
+        self.browser.find_element_by_link_text("My Lists").click()
+
+        # User sees that her list is in there, named after 1st list item
+        self.wait_for(
+            lambda: self.browser.find_element_by_link_text('Test 1st')
+        )
+        self.browser.find_element_by_link_text('Test 1st').click()
+        self.wait_for(
+            lambda: self.assertEqual(self.browser.current_url, first_list_url)
+        )
+
+        # User then starts another list,
+        self.browser.get(self.live_server_url)
+        self.add_list_item('Another test')
+        second_list_url = self.browser.current_url
+
+        # New list appears under "My lists" link
+        self.browser.find_element_by_link_text('My Lists')
+        self.wait_for(
+            lambda: self.browser.find_element_by_link_text('Another test')
+        )
+        self.browser.find_element_by_link_text('Another test').click()
+        self.wait_for(
+            lambda: self.assertEqual(self.browser.current_url, second_list_url)
+        )
+        # Then user logs out. The "My Lists" option dissappears
+        self.browser.find_element_by_link_text('Log out').click()
+        self.wait_for(lambda: self.assertEqual(
+            self.browser.find_elements_by_link_text('My Lists'),
+            []
+        ))
