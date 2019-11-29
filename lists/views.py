@@ -23,7 +23,7 @@ def view_list(request, list_id):
 def new_list(request):
     form = ItemForm(data=request.POST)
     if form.is_valid():
-        item_list = List.objects.create()
+        item_list = List()
         item_list.owner = request.user
         item_list.save()
         form.save(for_list=item_list)

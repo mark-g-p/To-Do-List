@@ -7,8 +7,10 @@ from lists.forms import (
 )
 from lists.models import Item, List
 from unittest import skip
+from unittest.mock import patch
 
 User = get_user_model()
+
 
 class HomePageTest(TestCase):
 
@@ -19,6 +21,7 @@ class HomePageTest(TestCase):
     def test_home_page_uses_item_form(self):
         response = self.client.get('/')
         self.assertIsInstance(response.context['form'], ItemForm)
+
 
 class ListViewTest(TestCase):
 
@@ -59,7 +62,6 @@ class ListViewTest(TestCase):
         new_item = Item.objects.first()
         self.assertEqual(new_item.text, 'A new item for an existing list')
         self.assertEqual(new_item.list, correct_list)
-
 
     def test_POST_redirects_to_list_view(self):
         other_list = List.objects.create()
@@ -105,17 +107,20 @@ class ListViewTest(TestCase):
         self.assertTemplateUsed(response, 'lists/list.html')
         self.assertEqual(Item.objects.all().count(), 1)
 
+
 class NewListTest(TestCase):
 
     def test_can_save_a_POST_request(self):
-        response = self.client.post('/lists/new', data={'text': 'A new list item'})
+        response = self.client.post(
+            '/lists/new', data={'text': 'A new list item'})
 
         self.assertEqual(Item.objects.count(), 1)
         new_item = Item.objects.first()
         self.assertEqual(new_item.text, 'A new list item')
 
     def test_redirects_after_POST(self):
-        response = self.client.post('/lists/new', data={'text': 'A new list item'})
+        response = self.client.post(
+            '/lists/new', data={'text': 'A new list item'})
         new_list = List.objects.first()
         self.assertRedirects(response, f'/lists/{new_list.id}/')
 
@@ -129,7 +134,7 @@ class NewListTest(TestCase):
         self.assertContains(response, escape(EMPTY_ITEM_ERROR))
 
     def test_for_invalid_input_passes_form_to_template(self):
-        response = self.client.post('/lists/new', data={'text':''})
+        response = self.client.post('/lists/new', data={'text': ''})
         self.assertIsInstance(response.context['form'], ItemForm)
 
     def test_invalid_list_items_arent_saved(self):
@@ -137,12 +142,23 @@ class NewListTest(TestCase):
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Item.objects.count(), 0)
 
-    def test_list_owner_is_saved_if_user_is_authenticated(self):
+    @patch('lists.views.List')
+    @patch('lists.views.ItemForm')
+    def test_list_owner_is_saved_if_user_is_authenticated(
+        self,
+        mockItemFormClass,
+        mockListClass
+    ):
+
         user = User.objects.create(email='testing@goat.com')
         self.client.force_login(user)
+        # django 2 cannot redirect with model mocks
+        mockListClass().get_absolute_url.return_value = '/'
         self.client.post('/lists/new', data={'text': 'new item'})
-        item_list = List.objects.first()
-        self.assertEqual(item_list.owner, user)
+
+        mock_list = mockListClass.return_value
+        self.assertEqual(mock_list.owner, user)
+
 
 class MyListsTest(TestCase):
 
