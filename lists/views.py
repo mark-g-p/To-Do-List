@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.shortcuts import redirect, render
-from lists.forms import ExistingListItemForm, ItemForm
+from lists.forms import ExistingListItemForm, ItemForm, NewListForm
 from lists.models import Item, List
 
 User = get_user_model()
@@ -30,6 +30,13 @@ def new_list(request):
         return redirect(item_list)
     else:
         return render(request, 'lists/home.html', {"form": form})
+
+def new_list2(request):
+    form = NewListForm(data=request.POST)
+    if form.is_valid():
+        item_list = form.save(owner=request.user)
+        return redirect(item_list)
+    return render(request, 'lists/home.html', {"form": form})
 
 def my_lists(request, email):
     user = User.objects.get(email=email)
