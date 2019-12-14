@@ -1,9 +1,12 @@
 from django.test import TestCase
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from lists.models import Item, List
 
+User = get_user_model()
+
 class ListAndItemModelsTest(TestCase):
-    
+
     def test_default_text(self):
         item = Item()
         self.assertEqual(item.text, '')
@@ -29,7 +32,7 @@ class ListAndItemModelsTest(TestCase):
             item = Item(list=list1, text='bla')
             item.full_clean()
           # item.save()
-    
+
     def test_CAN_save_same_item_to_different_lists(self):
         list1 = List.objects.create()
         list2 = List.objects.create()
@@ -57,3 +60,21 @@ class ListModelTest(TestCase):
         item_list = List.objects.create()
         self.assertEqual(item_list.get_absolute_url(), f'/lists/{item_list.id}/')
 
+    def test_create_new_creates_list_and_first_item(self):
+        List.create_new(first_item_text='new item')
+        new_item = Item.objects.first()
+        self.assertEqual(new_item.text, 'new item')
+        new_list = List.objects.first()
+        self.assertEqual(new_item.list, new_list)
+
+    def test_lists_can_have_owners(self):
+        List(owner=User())  # should not raise
+
+    def test_list_owner_is_optional(self):
+        List().full_clean()  # should not raise
+
+    def test_create_new_optionally_saves_owner(self):
+        user = User.objects.create()
+        List.create_new(first_item_text="new item", owner=user)
+        new_list = List.objects.first()
+        self.assertEqual(new_list.owner, user)
