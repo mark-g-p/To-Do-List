@@ -26,14 +26,6 @@ class ItemFormTest(TestCase):
             ["You can't have an empty list item"]
         )
 
-    def test_form_save_handles_saving_to_a_list(self):
-        item_list = List.objects.create()
-        form = ItemForm(data={'text': 'Do me'})
-        new_item = form.save(for_list=item_list)
-        self.assertEqual(new_item, Item.objects.first())
-        self.assertEqual(new_item.text, 'Do me')
-        self.assertEqual(new_item.list, item_list)
-
 
 class ExistingListItemFormTest(TestCase):
 
