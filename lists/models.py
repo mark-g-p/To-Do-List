@@ -15,7 +15,11 @@ class List(models.Model):
     def create_new(first_item_text, owner=None):
         item_list = List.objects.create(owner=owner)
         Item.objects.create(text=first_item_text, list=item_list)
+        return item_list
 
+    @property
+    def name(self):
+        return self.item_set.first().text
 
 class Item(models.Model):
     text = models.TextField(default='')

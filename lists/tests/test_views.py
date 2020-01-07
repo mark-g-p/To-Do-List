@@ -4,7 +4,7 @@ from django.test import TestCase
 from django.utils.html import escape
 from lists.forms import (
     DUPLICATE_ITEM_ERROR, EMPTY_ITEM_ERROR,
-    ExistingListItemForm, ItemForm,
+    ExistingListItemForm, ItemForm, NewListForm
 )
 from lists.models import Item, List
 from lists.views import new_list2
@@ -159,31 +159,13 @@ class NewListViewIntegratedTest(TestCase):
         self.assertEqual(List.objects.count(), 0)
         self.assertEqual(Item.objects.count(), 0)
 
-    # test with mocks
-    # @patch('lists.views.List')
-    # @patch('lists.views.ItemForm')
-    # def test_list_owner_is_saved_if_user_is_authenticated(
-    #     self,
-    #     mockItemFormClass,
-    #     mockListClass
-    # ):
-    #
-    #     user = User.objects.create(email='testing@goat.com')
-    #     self.client.force_login(user)
-    #     # django 2 cannot redirect with model mocks
-    #     mockListClass().get_absolute_url.return_value = '/'
-    #     self.client.post('/lists/new', data={'text': 'new item'})
-    #
-    #     mock_list = mockListClass.return_value
-    #     self.assertEqual(mock_list.owner, user)
-
-    @skip("old test")
     def test_list_owner_is_saved_if_user_is_authenticated(self):
         user = User.objects.create(email='a@b.com')
         self.client.force_login(user)
         self.client.post('/lists/new', data={'text': 'new item'})
         list_ = List.objects.first()
         self.assertEqual(list_.owner, user)
+
 
 # We have to patch redirect for all tests because django
 # removed support for bytestrings in some places
@@ -215,6 +197,20 @@ class NewListViewUnitTest(unittest.TestCase):
         mock_form.is_valid.return_value = True
         new_list2(self.request)
         mock_form.save.assert_called_once_with(owner=self.request.user)
+
+    @patch('lists.forms.List.create_new')
+    def test_save_returns_new_list_object(
+        self,
+        mock_List_create_new,
+        mock_redirect,
+        mockNewListForm
+        ):
+        user = unittest.mock.Mock(is_authenticated=True)
+        # have to use not mocked form
+        form = NewListForm(data={'text': 'new item text'})
+        form.is_valid()
+        response = form.save(owner=user)
+        self.assertEqual(response, mock_List_create_new.return_value)
 
     def test_redirects_to_form_returned_object_if_form_valid(
         self,
